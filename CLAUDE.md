@@ -3,7 +3,7 @@
 App web para uma social media que atende várias empresas: gera carrosséis de Instagram (PNG 1080x1350) e edita vídeos curtos (corte de silêncio + legenda + logo, MP4 9:16), sempre com a identidade do **kit de marca** de cada cliente. O projeto de origem está descrito em "PosterAi — Projeto do MVP"; ele é ponto de partida e pode ser ajustado.
 
 ## Stack
-Monorepo pnpm. Next.js 15 (App Router, TS, Tailwind 4) · Postgres + Prisma 6 · Redis + BullMQ · worker Node (ffmpeg, Playwright) · Docker Compose para deploy no Coolify (VPS).
+Monorepo pnpm. Next.js 15 (App Router, TS, Tailwind 4, tema dark) · Postgres + Prisma 6 · Redis + BullMQ · worker Node (ffmpeg, Playwright) · Docker Compose para deploy no Coolify (VPS).
 
 ```
 apps/web         telas + API (só recebe pedidos e enfileira)
@@ -28,12 +28,14 @@ storage/         uploads e exports (volume; fora do git)
 5. Arquivos só dentro de `STORAGE_DIR`; no banco, guarde caminhos relativos a ele.
 6. Segredos só por variável de ambiente; nunca commitar `.env`.
 7. Auth: senha única (`APP_PASSWORD`), cookie JWT assinado com `SESSION_SECRET`, middleware protege tudo exceto `/login` e `/api/health`.
-8. Interface em português do Brasil.
+8. Interface em português do Brasil, tema dark.
+10. IA: só OpenAI por enquanto (`LLM_PROVIDER=openai`, `OPENAI_API_KEY`; `mock` roda sem chave). O prompt em `packages/ai` evita jeito de texto de IA; ajuste lá. Transcrição (Fase 2): Whisper `whisper-1`, que dá tempo por palavra.
+11. Templates são React com estilos inline em `packages/templates`; o mesmo componente serve a prévia (web) e o render PNG (worker, Playwright). Fontes vêm do Google Fonts.
 9. Migrations: sempre via `prisma migrate dev`; o worker roda `migrate deploy` ao subir.
 
 ## Roadmap
 - **Fase 0 (feita):** monorepo, compose, schema, login, fila ponta a ponta com handlers stub.
-- **Fase 1:** clientes + kit de marca, carrossel completo (3 templates, export ZIP).
+- **Fase 1 (feita):** clientes + kit de marca com prévia, carrossel completo (IA → 3 templates → editor → ZIP de PNGs), histórico.
 - **Fase 2:** vídeo (upload, transcrição, revisão, corte de silêncio, legenda ASS, logo).
 - **Fase 3:** legendas animadas (Remotion tem licença própria: conferir antes de vender como SaaS), refinamentos.
 - Depois: entrada por WhatsApp (Evolution API + n8n), agendamento, aprovação do cliente, SaaS.

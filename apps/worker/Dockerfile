@@ -8,6 +8,8 @@ WORKDIR /app
 COPY . .
 RUN pnpm install --frozen-lockfile
 RUN DATABASE_URL=postgresql://x:x@localhost/x pnpm db:generate
+# Chromium do Playwright (render dos slides)
+RUN pnpm --filter @posterai/worker exec playwright install --with-deps chromium
 ENV NODE_ENV=production
 # Aplica migrations pendentes e sobe o worker
 CMD ["sh", "-c", "pnpm db:deploy && pnpm --filter @posterai/worker start"]

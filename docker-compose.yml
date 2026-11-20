@@ -42,6 +42,9 @@ services:
       STORAGE_DIR: /storage
       APP_PASSWORD: ${SERVICE_PASSWORD_APP}
       SESSION_SECRET: ${SERVICE_PASSWORD_64_SESSION}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      LLM_PROVIDER: ${LLM_PROVIDER:-openai}
+      OPENAI_MODEL: ${OPENAI_MODEL:-gpt-4o-mini}
       ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
       SERVICE_FQDN_WEB_3000: ""
     volumes:
@@ -64,9 +67,10 @@ services:
       DATABASE_URL: postgresql://posterai:${SERVICE_PASSWORD_POSTGRES}@postgres:5432/posterai
       REDIS_URL: redis://redis:6379
       STORAGE_DIR: /storage
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      LLM_PROVIDER: ${LLM_PROVIDER:-openai}
+      OPENAI_MODEL: ${OPENAI_MODEL:-gpt-4o-mini}
       ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
-      TRANSCRIPTION_PROVIDER: ${TRANSCRIPTION_PROVIDER:-api}
-      TRANSCRIPTION_API_KEY: ${TRANSCRIPTION_API_KEY:-}
     volumes:
       - storage:/storage
 

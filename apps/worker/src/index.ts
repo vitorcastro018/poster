@@ -1,15 +1,15 @@
 import { Worker } from "bullmq";
 import IORedis from "ioredis";
 import { prisma, QUEUE_NAME } from "@posterai/db";
+import { renderCarousel } from "./carousel-render.js";
 
 const connection = new IORedis(process.env.REDIS_URL ?? "redis://localhost:6379", {
   maxRetriesPerRequest: null,
 });
 
-// Fase 0: handlers são stubs. Render de carrossel (Playwright), transcrição e
-// render de vídeo (ffmpeg) entram nas Fases 1 e 2.
+// Carrossel já renderiza (Fase 1). Transcrição e render de vídeo (ffmpeg) entram na Fase 2.
 const handlers: Record<string, (refId: string) => Promise<void>> = {
-  CAROUSEL_RENDER: async () => { throw new Error("carousel_render ainda não implementado (Fase 1)"); },
+  CAROUSEL_RENDER: renderCarousel,
   TRANSCRIBE: async () => { throw new Error("transcribe ainda não implementado (Fase 2)"); },
   VIDEO_RENDER: async () => { throw new Error("video_render ainda não implementado (Fase 2)"); },
   PING: async () => {},
