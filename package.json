@@ -1,0 +1,14 @@
+{
+  "name": "posterai",
+  "private": true,
+  "packageManager": "pnpm@10.28.0",
+  "scripts": {
+    "dev:web": "pnpm --filter @posterai/web dev",
+    "dev:worker": "pnpm --filter @posterai/worker dev",
+    "build": "pnpm -r build",
+    "typecheck": "pnpm -r typecheck",
+    "db:generate": "pnpm --filter @posterai/db run generate",
+    "db:migrate": "pnpm --filter @posterai/db run migrate",
+    "db:deploy": "pnpm --filter @posterai/db run migrate:deploy"
+  }
+}

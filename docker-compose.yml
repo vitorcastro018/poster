@@ -1,0 +1,74 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: posterai
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-posterai}
+      POSTGRES_DB: posterai
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U posterai"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    volumes:
+      - redisdata:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+    restart: unless-stopped
+    depends_on:
+      postgres: { condition: service_healthy }
+      redis: { condition: service_healthy }
+    environment:
+      DATABASE_URL: postgresql://posterai:${POSTGRES_PASSWORD:-posterai}@postgres:5432/posterai
+      REDIS_URL: redis://redis:6379
+      STORAGE_DIR: /storage
+      APP_PASSWORD: ${APP_PASSWORD:?defina APP_PASSWORD}
+      SESSION_SECRET: ${SESSION_SECRET:?defina SESSION_SECRET}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+    volumes:
+      - storage:/storage
+    expose:
+      - "3000"
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://localhost:3000/api/health').then(r=>process.exit(r.status<500?0:1)).catch(()=>process.exit(1))"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+
+  worker:
+    build:
+      context: .
+      dockerfile: apps/worker/Dockerfile
+    restart: unless-stopped
+    depends_on:
+      postgres: { condition: service_healthy }
+      redis: { condition: service_healthy }
+    environment:
+      DATABASE_URL: postgresql://posterai:${POSTGRES_PASSWORD:-posterai}@postgres:5432/posterai
+      REDIS_URL: redis://redis:6379
+      STORAGE_DIR: /storage
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      TRANSCRIPTION_PROVIDER: ${TRANSCRIPTION_PROVIDER:-api}
+      TRANSCRIPTION_API_KEY: ${TRANSCRIPTION_API_KEY:-}
+    volumes:
+      - storage:/storage
+
+volumes:
+  pgdata:
+  redisdata:
+  storage:

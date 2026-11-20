@@ -1,0 +1,82 @@
+generator client {
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "debian-openssl-3.0.x"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum ItemStatus {
+  DRAFT
+  QUEUED
+  PROCESSING
+  READY
+  FAILED
+}
+
+enum JobType {
+  CAROUSEL_RENDER
+  TRANSCRIBE
+  VIDEO_RENDER
+}
+
+model Client {
+  id           String     @id @default(cuid())
+  name         String
+  logoPath     String?    @map("logo_path")
+  colors       Json       @default("[]") // até 5 cores hex
+  fonts        Json       @default("{}") // { title, body } (Google Fonts)
+  voiceTone    String?    @map("voice_tone")
+  captionStyle Json       @default("{}") // { font, color, highlightColor, position }
+  createdAt    DateTime   @default(now()) @map("created_at")
+  carousels    Carousel[]
+  videos       Video[]
+
+  @@map("clients")
+}
+
+model Carousel {
+  id        String     @id @default(cuid())
+  clientId  String     @map("client_id")
+  client    Client     @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  topic     String
+  template  String?
+  slides    Json       @default("[]")
+  caption   String?
+  status    ItemStatus @default(DRAFT)
+  zipPath   String?    @map("zip_path")
+  createdAt DateTime   @default(now()) @map("created_at")
+
+  @@index([clientId])
+  @@map("carousels")
+}
+
+model Video {
+  id         String     @id @default(cuid())
+  clientId   String     @map("client_id")
+  client     Client     @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  sourcePath String     @map("source_path")
+  transcript Json? // palavras com tempo
+  options    Json       @default("{}")
+  status     ItemStatus @default(DRAFT)
+  outputPath String?    @map("output_path")
+  createdAt  DateTime   @default(now()) @map("created_at")
+
+  @@index([clientId])
+  @@map("videos")
+}
+
+model Job {
+  id        String     @id @default(cuid())
+  type      JobType
+  refId     String     @map("ref_id")
+  status    ItemStatus @default(QUEUED)
+  progress  Int        @default(0)
+  error     String?
+  createdAt DateTime   @default(now()) @map("created_at")
+
+  @@index([refId])
+  @@map("jobs")
+}
