@@ -17,7 +17,7 @@ storage/         uploads e exports (volume; fora do git)
 - `pnpm install` · `pnpm typecheck` · `pnpm build`
 - `pnpm db:generate` · `pnpm db:migrate` (dev, cria migration) · `pnpm db:deploy` (aplica)
 - `pnpm dev:web` · `pnpm dev:worker` (precisam de Postgres e Redis; copie `.env.example` para `.env`)
-- `docker compose up --build` sobe tudo (exige `APP_PASSWORD` e `SESSION_SECRET` no ambiente)
+- `docker compose --env-file .env up --build` sobe tudo (no Coolify, as `SERVICE_*` são geradas no deploy; veja o README)
 - Não use `pnpm deploy` para migrations: é comando nativo do pnpm. Use `pnpm db:deploy`.
 
 ## Regras

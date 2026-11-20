@@ -1,10 +1,13 @@
+# Pensado para o Coolify: as variáveis SERVICE_* são geradas automaticamente no deploy
+# (senhas do Postgres e do app, segredo de sessão, domínio do web). Veja os valores
+# na aba Environment Variables do recurso. Para rodar localmente, defina-as no .env.
 services:
   postgres:
     image: postgres:16-alpine
     restart: unless-stopped
     environment:
       POSTGRES_USER: posterai
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-posterai}
+      POSTGRES_PASSWORD: ${SERVICE_PASSWORD_POSTGRES}
       POSTGRES_DB: posterai
     volumes:
       - pgdata:/var/lib/postgresql/data
@@ -34,16 +37,15 @@ services:
       postgres: { condition: service_healthy }
       redis: { condition: service_healthy }
     environment:
-      DATABASE_URL: postgresql://posterai:${POSTGRES_PASSWORD:-posterai}@postgres:5432/posterai
+      DATABASE_URL: postgresql://posterai:${SERVICE_PASSWORD_POSTGRES}@postgres:5432/posterai
       REDIS_URL: redis://redis:6379
       STORAGE_DIR: /storage
-      APP_PASSWORD: ${APP_PASSWORD:?defina APP_PASSWORD}
-      SESSION_SECRET: ${SESSION_SECRET:?defina SESSION_SECRET}
+      APP_PASSWORD: ${SERVICE_PASSWORD_APP}
+      SESSION_SECRET: ${SERVICE_PASSWORD_64_SESSION}
       ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      SERVICE_FQDN_WEB_3000: ""
     volumes:
       - storage:/storage
-    expose:
-      - "3000"
     healthcheck:
       test: ["CMD", "node", "-e", "fetch('http://localhost:3000/api/health').then(r=>process.exit(r.status<500?0:1)).catch(()=>process.exit(1))"]
       interval: 15s
@@ -59,7 +61,7 @@ services:
       postgres: { condition: service_healthy }
       redis: { condition: service_healthy }
     environment:
-      DATABASE_URL: postgresql://posterai:${POSTGRES_PASSWORD:-posterai}@postgres:5432/posterai
+      DATABASE_URL: postgresql://posterai:${SERVICE_PASSWORD_POSTGRES}@postgres:5432/posterai
       REDIS_URL: redis://redis:6379
       STORAGE_DIR: /storage
       ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
